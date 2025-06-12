@@ -12,6 +12,7 @@ const bcrypt = require('bcrypt');
 const rateLimit = require('express-rate-limit');
 const validator = require('validator');
 const { sendPasswordRecoveryEmail, sendRecoveryEmail } = require('./utils/emailService');
+const crypto = require('crypto');
 
 const app = express();
 
@@ -771,23 +772,30 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/recuperar', authLimiter);
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
     const { correo, contrasena } = req.body;
     
     if (!correo || !contrasena) {
-      return res.status(400).json({ message: 'Correo y contraseña son requeridos' });
+      return res.status(400).json({ 
+        message: 'Correo y contraseña son requeridos' 
+      });
     }
 
+    // Hash the provided password
+    const hashedPassword = hashPassword(contrasena);
+
+    // Check credentials with hashed password
     const [users] = await connection.promise().query(
       'SELECT id, nombre, apellido, correo, rol FROM usuarios WHERE correo = ? AND contraseña = ?',
-      [correo, contrasena]
+      [correo, hashedPassword]
     );
 
     if (users.length === 0) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
+    // Generate JWT token
     const token = jwt.sign(
       { id: users[0].id, rol: users[0].rol },
       authConfig.secret,
@@ -798,6 +806,7 @@ app.post('/api/auth/login', async (req, res) => {
       usuario: users[0],
       token: token
     });
+
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Error en el servidor' });
@@ -808,13 +817,19 @@ app.post('/api/auth/registro', async (req, res) => {
   try {
     const { nombre, apellido, correo, telefono, direccion, contrasena, rol } = req.body;
 
+    // Validate email
     if (!validator.isEmail(correo)) {
       return res.status(400).json({ message: 'Correo electrónico inválido' });
     }
+
+    // Validate password length and complexity
     if (!validator.isLength(contrasena, { min: 8 })) {
-      return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres' });
+      return res.status(400).json({ 
+        message: 'La contraseña debe tener al menos 8 caracteres' 
+      });
     }
 
+    // Check if user exists
     const [existingUsers] = await connection.promise().query(
       'SELECT id FROM usuarios WHERE correo = ?',
       [correo]
@@ -824,20 +839,24 @@ app.post('/api/auth/registro', async (req, res) => {
       return res.status(400).json({ message: 'El correo ya está registrado' });
     }
 
-    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    // Hash password with SHA-512
+    const hashedPassword = hashPassword(contrasena);
 
+    // Insert new user
     const [result] = await connection.promise().query(
       `INSERT INTO usuarios (nombre, apellido, correo, telefono, direccion, contraseña, rol) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [nombre, apellido, correo, telefono, direccion, hashedPassword, rol]
     );
 
+    // Create paseador record if role is paseador
     if (rol === 'paseador') {
       await connection.promise().query(
         'INSERT INTO paseadores (usuario_id, zona_servicio, tarifa) VALUES (?, ?, ?)',
         [result.insertId, 'Zona 1', 100]
       );
     }
+
     res.status(201).json({
       id: result.insertId,
       nombre,
@@ -845,6 +864,7 @@ app.post('/api/auth/registro', async (req, res) => {
       correo,
       rol
     });
+
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Error en el servidor' });
@@ -916,6 +936,11 @@ app.post('/api/auth/restablecer', async (req, res) => {
     res.status(500).json({ message: 'Error al restablecer la contraseña' });
   }
 });
+
+// Add helper function for SHA-512 hashing
+function hashPassword(password) {
+  return crypto.createHash('sha512').update(password).digest('hex');
+}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
