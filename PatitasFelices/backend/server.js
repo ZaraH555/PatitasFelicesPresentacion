@@ -277,36 +277,60 @@ const validateMascotaData = (data) => {
   }
 };
 
-// Update mascotas POST endpoint
+// Update the POST mascota endpoint
 app.post('/api/mascotas', upload.single('imagen'), async (req, res) => {
   try {
-    const { nombre, raza, tamano = 'mediano', edad = 0, notas = '' } = req.body;
-    // Get user ID from authentication (you should implement this)
-    const usuario_id = req.user?.id || 1; // Fallback to 1 for testing
-    let imagen_url = null;
+    const { 
+      nombre, 
+      raza, 
+      tamano = 'mediano', 
+      edad = 0,
+      tipoEdad = 'años', 
+      notas = '' 
+    } = req.body;
 
+    // Set default usuario_id to 1 for now
+    // In production, this should come from authenticated user session
+    const usuario_id = 1; // Add this line to define usuario_id
+
+    // Validate edad
+    const edadNum = parseInt(edad);
+    if (edadNum < 0) {
+      throw new Error('La edad no puede ser negativa');
+    }
+    if (tipoEdad === 'años' && edadNum > 30) {
+      throw new Error('La edad en años no puede ser mayor a 30');
+    }
+    if (tipoEdad === 'meses' && edadNum > 360) {
+      throw new Error('La edad en meses no puede ser mayor a 360');
+    }
+
+    let imagen_url = null;
     if (req.file) {
       imagen_url = `/uploads/mascotas/${req.file.filename}`;
     }
 
+    // Add validation for required fields
     validateMascotaData({ nombre, raza, tamano });
 
     const [result] = await connection.promise().query(
-      'INSERT INTO mascotas (nombre, raza, tamaño, edad, notas, usuario_id, imagen_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [nombre, raza, tamano, edad, notas, usuario_id, imagen_url]
+      `INSERT INTO mascotas (nombre, raza, tamaño, edad, tipo_edad, notas, usuario_id, imagen_url) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nombre, raza, tamano, edadNum, tipoEdad, notas, usuario_id, imagen_url]
     );
 
-    const [newMascota] = await connection.promise().query(
-      'SELECT *, tamaño as tamano FROM mascotas WHERE id = ?',
-      [result.insertId]
-    );
-
-    const mascotaWithFullUrl = {
-      ...newMascota[0],
+    res.status(201).json({
+      id: result.insertId,
+      nombre,
+      raza,
+      tamano,
+      edad: edadNum,
+      tipoEdad,
+      notas,
+      usuario_id,
       imagen_url: imagen_url ? `http://localhost:3000${imagen_url}` : null
-    };
+    });
 
-    res.status(201).json(mascotaWithFullUrl);
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: error.message });
