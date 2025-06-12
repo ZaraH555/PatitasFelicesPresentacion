@@ -91,110 +91,121 @@ connection.connect(error => {
   initializeDatabase();
 });
 
+// Update the initializeDatabase function
 function initializeDatabase() {
- 
-  connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci`, (error) => {
+  // Create default user first
+  connection.query(`
+    INSERT IGNORE INTO usuarios (id, nombre, apellido, correo, contraseña, rol)
+    VALUES (1, 'Usuario', 'Default', 'default@example.com', 'password', 'dueño')
+  `, (error) => {
     if (error) {
-      console.error('Error creating database:', error);
+      console.error('Error creating default user:', error);
       return;
     }
 
-    connection.query(`USE ${process.env.DB_NAME}`, (error) => {
+    connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci`, (error) => {
       if (error) {
-        console.error('Error selecting database:', error);
+        console.error('Error creating database:', error);
         return;
       }
 
-      connection.query(`
-        CREATE TABLE IF NOT EXISTS mascotas (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          nombre VARCHAR(100) NOT NULL,
-          raza VARCHAR(100),
-          tamaño VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-          edad INT,
-          notas TEXT,
-          usuario_id INT,
-          imagen_url VARCHAR(255) DEFAULT NULL
-        ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
-      `, (error) => {
+      connection.query(`USE ${process.env.DB_NAME}`, (error) => {
         if (error) {
-          console.error('Error creating mascotas table:', error);
+          console.error('Error selecting database:', error);
           return;
         }
 
-        // Create servicios table if not exists
         connection.query(`
-          CREATE TABLE IF NOT EXISTS servicios (
+          CREATE TABLE IF NOT EXISTS mascotas (
             id INT AUTO_INCREMENT PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
-            duracion INT,
-            precio DECIMAL(10,2),
-            descripcion TEXT
+            raza VARCHAR(100),
+            tamaño VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+            edad INT,
+            notas TEXT,
+            usuario_id INT,
+            imagen_url VARCHAR(255) DEFAULT NULL
           ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
         `, (error) => {
           if (error) {
-            console.error('Error creating servicios table:', error);
+            console.error('Error creating mascotas table:', error);
             return;
           }
 
-          // Create paseos table if not exists
+          // Create servicios table if not exists
           connection.query(`
-            CREATE TABLE IF NOT EXISTS paseos (
+            CREATE TABLE IF NOT EXISTS servicios (
               id INT AUTO_INCREMENT PRIMARY KEY,
-              usuario_id INT,
-              mascota_id INT,
-              paseador_id INT,
-              servicio_id INT,
-              fecha DATETIME,
-              estado VARCHAR(50),
-              comprobante_xml TEXT
+              nombre VARCHAR(100) NOT NULL,
+              duracion INT,
+              precio DECIMAL(10,2),
+              descripcion TEXT
             ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
           `, (error) => {
             if (error) {
-              console.error('Error creating paseos table:', error);
+              console.error('Error creating servicios table:', error);
               return;
             }
 
-            // Create usuarios table if not exists
+            // Create paseos table if not exists
             connection.query(`
-              CREATE TABLE IF NOT EXISTS usuarios (
+              CREATE TABLE IF NOT EXISTS paseos (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                nombre VARCHAR(100) NOT NULL,
-                apellido VARCHAR(100) NOT NULL,
-                correo VARCHAR(100) NOT NULL UNIQUE,
-                telefono VARCHAR(20),
-                direccion VARCHAR(200),
-                contraseña VARCHAR(255) NOT NULL,
-                rol VARCHAR(20) NOT NULL
+                usuario_id INT,
+                mascota_id INT,
+                paseador_id INT,
+                servicio_id INT,
+                fecha DATETIME,
+                estado VARCHAR(50),
+                comprobante_xml TEXT
               ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
             `, (error) => {
               if (error) {
-                console.error('Error creating usuarios table:', error);
+                console.error('Error creating paseos table:', error);
                 return;
               }
 
-              // Add test services if none exist
-              connection.query('SELECT COUNT(*) as count FROM servicios', (error, results) => {
-                if (!error && results[0].count === 0) {
-                  const testServices = [
-                    {
-                      nombre: 'Paseo Básico',
-                      duracion: 30,
-                      precio: 150.00,
-                      descripcion: 'Paseo de 30 minutos'
-                    },
-                    {
-                      nombre: 'Paseo Estándar',
-                      duracion: 60,
-                      precio: 250.00,
-                      descripcion: 'Paseo de 1 hora'
-                    }
-                  ];
-                  
-                  testServices.forEach(service => {
-                    connection.query('INSERT INTO servicios SET ?', service);
-                  });
+              // Create usuarios table if not exists
+              connection.query(`
+                CREATE TABLE IF NOT EXISTS usuarios (
+                  id INT AUTO_INCREMENT PRIMARY KEY,
+                  nombre VARCHAR(100) NOT NULL,
+                  apellido VARCHAR(100) NOT NULL,
+                  correo VARCHAR(100) NOT NULL UNIQUE,
+                  telefono VARCHAR(20),
+                  direccion VARCHAR(200),
+                  contraseña VARCHAR(255) NOT NULL,
+                  rol VARCHAR(20) NOT NULL
+                ) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+              `, (error) => {
+                if (error) {
+                  console.error('Error creating usuarios table:', error);
+                  return;
                 }
+
+                // Add test services if none exist
+                connection.query('SELECT COUNT(*) as count FROM servicios', (error, results) => {
+                  if (!error && results[0].count === 0) {
+                    const testServices = [
+                      {
+                        nombre: 'Paseo Básico',
+                        duracion: 30,
+                        precio: 150.00,
+                        descripcion: 'Paseo de 30 minutos'
+                      },
+                      {
+                        nombre: 'Paseo Estándar',
+                        duracion: 60,
+                        precio: 250.00,
+                        descripcion: 'Paseo de 1 hora'
+                      }
+                    ];
+                    
+                    testServices.forEach(service => {
+                      connection.query('INSERT INTO servicios SET ?', service);
+                    });
+                  }
+                });
               });
             });
           });
@@ -248,31 +259,48 @@ app.get('/api/servicios', (req, res) => {
   });
 });
 
+const validateMascotaData = (data) => {
+  const { nombre, raza, tamano } = data;
+  if (!nombre || !raza || !tamano) {
+    throw new Error('Missing required fields');
+  }
+  
+  const validTamanos = ['pequeño', 'mediano', 'grande'];
+  // Normalize the string to handle encoding issues
+  const normalizedTamano = tamano.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const normalizedValidTamanos = validTamanos.map(t => 
+    t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  );
+  
+  if (!normalizedValidTamanos.includes(normalizedTamano)) {
+    throw new Error(`Invalid tamano value: ${tamano}. Must be one of: pequeño, mediano, grande`);
+  }
+};
+
 // Update mascotas POST endpoint
 app.post('/api/mascotas', upload.single('imagen'), async (req, res) => {
   try {
     const { nombre, raza, tamano = 'mediano', edad = 0, notas = '' } = req.body;
+    // Get user ID from authentication (you should implement this)
+    const usuario_id = req.user?.id || 1; // Fallback to 1 for testing
     let imagen_url = null;
 
     if (req.file) {
-      // Store the relative path in the database
       imagen_url = `/uploads/mascotas/${req.file.filename}`;
     }
 
-    const query = `
-      INSERT INTO mascotas (nombre, raza, tamaño, edad, notas, usuario_id, imagen_url) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const values = [nombre, raza, tamano, edad, notas, 1, imagen_url];
+    validateMascotaData({ nombre, raza, tamano });
 
-    const [result] = await connection.promise().query(query, values);
-    
+    const [result] = await connection.promise().query(
+      'INSERT INTO mascotas (nombre, raza, tamaño, edad, notas, usuario_id, imagen_url) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nombre, raza, tamano, edad, notas, usuario_id, imagen_url]
+    );
+
     const [newMascota] = await connection.promise().query(
-      'SELECT *, tamaño as tamano FROM mascotas WHERE id = ?', 
+      'SELECT *, tamaño as tamano FROM mascotas WHERE id = ?',
       [result.insertId]
     );
 
-    // Add full URL for response
     const mascotaWithFullUrl = {
       ...newMascota[0],
       imagen_url: imagen_url ? `http://localhost:3000${imagen_url}` : null
@@ -281,7 +309,7 @@ app.post('/api/mascotas', upload.single('imagen'), async (req, res) => {
     res.status(201).json(mascotaWithFullUrl);
   } catch (error) {
     console.error('Database error:', error);
-    res.status(500).json({ error: 'Database error' });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -296,6 +324,9 @@ app.put('/api/mascotas/:id', upload.single('imagen'), async (req, res) => {
       // Store only the relative path
       imagen_url = `/uploads/mascotas/${req.file.filename}`;
     }
+
+    // Validate mascota data
+    validateMascotaData({ nombre, raza, tamano });
 
     const query = `
       UPDATE mascotas 

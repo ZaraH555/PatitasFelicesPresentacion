@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
 import { tap, map, catchError } from 'rxjs/operators';
 import { Mascota, MascotaFormData } from '../models/mascota';
 import { environment } from '../../environments/environment';
@@ -40,26 +40,27 @@ export class MascotaService {
 
   agregarMascota(mascotaData: MascotaFormData): Observable<Mascota> {
     const formData = new FormData();
+    
+    // Handle special characters in tamaño field
     Object.entries(mascotaData).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (key === 'imagen' && value instanceof File) {
           formData.append('imagen', value);
         } else {
+          // Ensure proper encoding of special characters
           formData.append(key, value.toString());
         }
       }
     });
 
-    return this.http.post<Mascota>(`${this.apiUrl}/mascotas`, formData).pipe(
-      tap(mascota => {
-        console.log('Mascota saved:', mascota);
-        this.cargarMascotas();
-      }),
-      catchError(error => {
-        console.error('Error saving mascota:', error);
-        throw error;
-      })
-    );
+    return this.http.post<Mascota>(`${this.apiUrl}/mascotas`, formData)
+      .pipe(
+        tap(() => this.cargarMascotas()),
+        catchError(error => {
+          console.error('Error saving mascota:', error);
+          return throwError(() => new Error(error.error?.message || 'Error al guardar la mascota'));
+        })
+      );
   }
 
   editarMascota(id: number, mascotaData: MascotaFormData): Observable<Mascota> {
@@ -102,5 +103,9 @@ export class MascotaService {
         `${this.apiUrl}/uploads/${mascota.imagen_url}`;
     }
     return '/assets/default-pet.jpg';
+  }
+
+  private validateMascotaData(data: MascotaFormData): boolean {
+    return !!(data.nombre && data.raza && data.tamano);
   }
 }

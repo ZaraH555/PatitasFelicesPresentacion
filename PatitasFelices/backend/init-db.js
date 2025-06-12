@@ -16,12 +16,7 @@ async function initDatabase() {
       VALUES (1, 'Usuario', 'Default', 'default@example.com', 'password', 'dueño')
     `);
 
-    // Add imagen column to mascotas if it doesn't exist
-    await connection.promise().query(`
-      ALTER TABLE mascotas 
-      MODIFY COLUMN tamaño VARCHAR(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
-      ADD COLUMN IF NOT EXISTS imagen VARCHAR(255) DEFAULT NULL
-    `);
+    
 
     // Insert test services if none exist
     const [rows] = await connection.promise().query('SELECT COUNT(*) as count FROM servicios');

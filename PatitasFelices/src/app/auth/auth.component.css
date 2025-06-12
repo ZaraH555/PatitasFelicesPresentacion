@@ -67,15 +67,19 @@ a {
 
 .auth-footer {
   position: fixed;
-  bottom: 2rem;
+  bottom: 0;           
   left: 0;
   right: 0;
   text-align: center;
   font-size: 0.95em;
   color: #666;
+  background-color: var(--background-color); 
+  padding: 1rem 0;    
+  z-index: 1000;      
 }
 
 .auth-footer a {
+  position: relative;
   color: #28a745;  /* Changed from #007bff to green */
   text-decoration: none;
   margin: 0 8px;

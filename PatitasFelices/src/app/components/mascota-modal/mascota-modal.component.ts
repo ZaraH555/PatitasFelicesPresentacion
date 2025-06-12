@@ -34,9 +34,9 @@ export interface MascotaForm extends Omit<Mascota, 'id' | 'imagen' | 'imagen_url
               <label for="tamano">Tamaño</label>
               <select id="tamano" name="tamano" class="form-control" 
                       [(ngModel)]="mascotaData.tamano" required>
-                <option value="pequeno">Pequeño</option>
-                <option value="mediano">Mediano</option>
-                <option value="grande">Grande</option>
+                <option [value]="'pequeño'">Pequeño</option>
+                <option [value]="'mediano'">Mediano</option>
+                <option [value]="'grande'">Grande</option>
               </select>
             </div>
             <div class="form-group">
@@ -104,6 +104,7 @@ export class MascotaModalComponent implements OnChanges {
   };
 
   selectedFile?: File;
+  isSaving = false;
 
   ngOnChanges() {
     if (this.mascota) {
@@ -124,19 +125,22 @@ export class MascotaModalComponent implements OnChanges {
     }
   }
 
-  guardar() {
+  async guardar() {
     if (!this.mascotaData.nombre || !this.mascotaData.raza) {
       return;
     }
-
-    this.guardarMascota.emit({
-      id: this.mascota?.id,
-      data: {
-        ...this.mascotaData,
-        imagen: this.selectedFile
-      }
-    });
-    this.cerrar();
+    this.isSaving = true;
+    try {
+      await this.guardarMascota.emit({
+        id: this.mascota?.id,
+        data: {
+          ...this.mascotaData,
+          imagen: this.selectedFile
+        }
+      });
+    } finally {
+      this.isSaving = false;
+    }
   }
 
   cerrar() {
