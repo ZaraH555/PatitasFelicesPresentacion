@@ -1,0 +1,64 @@
+:host {
+  display: block;
+  max-width: 800px;
+  margin: 40px auto 0 auto;
+  padding: 32px 24px 24px 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  color: #2d7a4a;
+  margin-bottom: 24px;
+}
+
+h2 {
+  color: #2d7a4a;
+  margin-top: 32px;
+  margin-bottom: 12px;
+  font-size: 1.3em;
+}
+
+h3 {
+  color: #388e3c;
+  margin-top: 24px;
+  margin-bottom: 8px;
+  font-size: 1.1em;
+}
+
+h4 {
+  color: #4caf50;
+  margin-top: 16px;
+  margin-bottom: 6px;
+  font-size: 1em;
+}
+
+p, ul {
+  margin-bottom: 12px;
+  line-height: 1.7;
+}
+
+ul {
+  padding-left: 24px;
+}
+
+.footer {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.footer a {
+  color: #2d7a4a;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.footer a:hover {
+  color: #1b4d2b;
+  text-decoration: underline;
+}

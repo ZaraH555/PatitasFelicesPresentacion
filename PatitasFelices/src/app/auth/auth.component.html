@@ -1,0 +1,103 @@
+<div class="auth-container" [ngClass]="{
+  'login-mode': currentForm === 'login',
+  'recovery-mode': currentForm === 'recovery'
+}">
+  
+  <div *ngIf="currentForm === 'login'">
+    <h2>Iniciar Sesión</h2>
+    <div *ngIf="error" class="error-message">{{error}}</div>
+    <form (ngSubmit)="onFormSubmit('login')" [formGroup]="loginForm">
+      <div class="form-group">
+        <input type="email" formControlName="correo" placeholder="Correo" 
+               [class.is-invalid]="loginForm.get('correo')?.invalid && loginForm.get('correo')?.touched">
+        <div class="form-error" *ngIf="loginForm.get('correo')?.invalid && loginForm.get('correo')?.touched">
+          Ingrese un correo válido
+        </div>
+      </div>
+      <div class="form-group">
+        <input type="password" formControlName="contrasena" placeholder="Contraseña"
+               [class.is-invalid]="loginForm.get('contrasena')?.invalid && loginForm.get('contrasena')?.touched">
+        <div class="form-error" *ngIf="loginForm.get('contrasena')?.invalid && loginForm.get('contrasena')?.touched">
+          La contraseña es requerida
+        </div>
+      </div>
+      <button type="submit" [disabled]="loginForm.invalid">Ingresar</button>
+    </form>
+    <div class="auth-links">
+      <a (click)="switchForm('register')">¿No tienes cuenta? Regístrate</a>
+      <a (click)="switchForm('recovery')" class="recover-link">¿Olvidaste tu contraseña?</a>
+    </div>
+  </div>
+
+  <div *ngIf="currentForm === 'register'">
+    <h2>Registro de Usuario</h2>
+    <div *ngIf="error" class="error-message">{{error}}</div>
+    <form (ngSubmit)="onFormSubmit('register')" [formGroup]="registerForm">
+      <div class="form-group">
+        <input type="text" formControlName="nombre" placeholder="Nombre"
+               [class.is-invalid]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched">
+      </div>
+      <div class="form-group">
+        <input type="text" formControlName="apellido" placeholder="Apellido"
+               [class.is-invalid]="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched">
+      </div>
+      <div class="form-group">
+        <input type="email" formControlName="correo" placeholder="Correo"
+               [class.is-invalid]="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
+        <div class="form-error" *ngIf="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
+          Ingrese un correo válido
+        </div>
+      </div>
+      <div class="form-group">
+        <input type="tel" formControlName="telefono" placeholder="Teléfono"
+               [class.is-invalid]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched">
+        <div class="form-error" *ngIf="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched">
+          Ingrese un número de teléfono válido
+        </div>
+      </div>
+      <div class="form-group">
+        <input type="text" formControlName="direccion" placeholder="Dirección"
+               [class.is-invalid]="registerForm.get('direccion')?.invalid && registerForm.get('direccion')?.touched">
+      </div>
+      <div class="form-group">
+        <input type="password" formControlName="contrasena" placeholder="Contraseña"
+               [class.is-invalid]="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched">
+        <div class="form-error" *ngIf="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched">
+          La contraseña es requerida
+        </div>
+      </div>
+      <div class="form-group">
+        <select formControlName="rol">
+          <option value="dueño">Dueño de Mascota</option>
+          <option value="paseador">Paseador</option>
+        </select>
+      </div>
+      <button type="submit" [disabled]="registerForm.invalid">Registrar</button>
+    </form>
+    <p class="toggle-form">
+      ¿Ya tienes cuenta? 
+      <a (click)="switchForm('login')">Inicia sesión</a>
+    </p>
+  </div>
+
+  <div *ngIf="currentForm === 'recovery'" class="recovery-form">
+    <h2>Recuperar Contraseña</h2>
+    <form (ngSubmit)="onFormSubmit('recovery')" [formGroup]="recoveryForm">
+      <div class="form-group">
+        <input type="email" formControlName="correo" placeholder="Correo electrónico">
+      </div>
+      <button type="submit" [disabled]="recoveryForm.invalid">
+        Enviar enlace de recuperación
+      </button>
+    </form>
+    <div class="auth-links">
+      <a (click)="switchForm('login')">Volver a inicio de sesión</a>
+    </div>
+  </div>
+</div>
+
+<footer class="auth-footer">
+  <a [routerLink]="['/aviso-privacidad']">Aviso de Privacidad</a>
+  <span>|</span>
+  <a [routerLink]="['/terminos-condiciones']">Términos y Condiciones</a>
+</footer>

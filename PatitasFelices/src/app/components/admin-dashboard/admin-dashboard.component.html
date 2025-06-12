@@ -1,0 +1,59 @@
+<div class="admin-container">
+  <h2>Panel de Administración</h2>
+  
+  <nav class="admin-tabs">
+    <button [class.active]="currentTab === 'dueños'" (click)="switchTab('dueños')">Dueños</button>
+    <button [class.active]="currentTab === 'paseadores'" (click)="switchTab('paseadores')">Paseadores</button>
+    <button [class.active]="currentTab === 'servicios'" (click)="switchTab('servicios')">Servicios</button>
+  </nav>
+
+  <div class="tab-content">
+    <div *ngIf="currentTab === 'dueños'" class="users-list">
+      <h3>Dueños de Mascotas</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Fecha de Registro</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let usuario of usuarios">
+            <td>{{usuario.nombre}}</td>
+            <td>{{usuario.registro | date}}</td>
+            <td>{{usuario.verificado ? 'Verificado' : 'Pendiente'}}</td>
+            <td>
+              <button class="action-btn">Detalles</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div *ngIf="currentTab === 'paseadores'" class="walkers-list">
+      <h3>Paseadores Activos</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Fecha de Registro</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let paseador of paseadoresActivos">
+            <td>{{paseador.nombre}}</td>
+            <td>{{paseador.registro | date}}</td>
+            <td>{{paseador.activo ? 'Activo' : 'Inactivo'}}</td>
+            <td>
+              <button class="action-btn">Detalles</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

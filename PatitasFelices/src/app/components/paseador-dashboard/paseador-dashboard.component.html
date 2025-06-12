@@ -1,0 +1,28 @@
+<div class="paseador-container">
+  <div class="header">
+    <h2>Bienvenido, {{nombrePaseador}}</h2>
+    <div class="stats">
+      <div class="stat-card">
+        <h3>Calificación</h3>
+        <p>{{calificacion}} ⭐</p>
+      </div>
+      <div class="stat-card">
+        <h3>Ganancias del Mes</h3>
+        <p>${{gananciasMes}}</p>
+        <small>Meta: ${{metaMensual}}</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="paseos-section">
+    <h3>Paseos Programados</h3>
+    <div class="paseos-list">
+      <div *ngFor="let paseo of paseosProgramados" class="paseo-card">
+        <h4>{{paseo.mascota}}</h4>
+        <p>{{paseo.raza}}</p>
+        <p>🕒 {{paseo.hora}}</p>
+        <p>📍 {{paseo.distancia}}</p>
+      </div>
+    </div>
+  </div>
+</div>
