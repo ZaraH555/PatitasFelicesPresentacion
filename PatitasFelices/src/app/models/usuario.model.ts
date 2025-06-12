@@ -5,7 +5,6 @@ export interface Usuario {
   nombre: string;
   apellido: string;
   correo: string;
-  telefono?: string;
-  direccion?: string;
-  rol: UserRole;
+  rol: 'dueño' | 'paseador' | 'administrador';
+  verificado?: boolean;
 }

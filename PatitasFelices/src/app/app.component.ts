@@ -6,6 +6,7 @@ import { PaseosService } from './services/paseos.service';
 import { Mascota } from './models/mascota';
 import { Servicio } from './models/servicio';
 import { Paseo } from './models/paseo';
+import { Usuario } from './models/usuario.model';
 import { catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { AuthService } from './services/auth.service';
@@ -21,26 +22,30 @@ interface CarritoItem {
     <div class="app-container">
       <nav class="sidebar" *ngIf="authService.user$ | async as user">
         <h3>Patitas Felices</h3>
+        <div class="user-info">
+          <p class="user-name">{{getUserName(user)}}</p>
+          <span class="user-role">{{getUserRole(user)}}</span>
+        </div>
         <ul class="nav-menu">
-          <!-- Show only for dueños -->
-          <li *ngIf="user.rol === 'dueño'">
-            <a routerLink="/mascotas" routerLinkActive="active">Mis Mascotas</a>
-          </li>
-          <li *ngIf="user.rol === 'dueño'">
-            <a routerLink="/paseos" routerLinkActive="active">Solicitar Paseo</a>
-          </li>
-          
-          <!-- Show only for paseadores -->
-          <li *ngIf="user.rol === 'paseador'">
-            <a routerLink="/paseador" routerLinkActive="active">Mis Paseos</a>
-          </li>
-          
-          <!-- Show only for admins -->
-          <li *ngIf="user.rol === 'administrador'">
-            <a routerLink="/admin" routerLinkActive="active">Administración</a>
-          </li>
-          
-          <!-- Common for all -->
+          <ng-container [ngSwitch]="getUserRole(user)">
+            <!-- Dueño options -->
+            <ng-container *ngSwitchCase="'dueño'">
+              <li><a routerLink="/mascotas" routerLinkActive="active">Mis Mascotas</a></li>
+              <li><a routerLink="/paseos" routerLinkActive="active">Solicitar Paseo</a></li>
+            </ng-container>
+            
+            <!-- Paseador options -->
+            <ng-container *ngSwitchCase="'paseador'">
+              <li><a routerLink="/paseador" routerLinkActive="active">Mis Paseos</a></li>
+            </ng-container>
+            
+            <!-- Admin options -->
+            <ng-container *ngSwitchCase="'administrador'">
+              <li><a routerLink="/admin" routerLinkActive="active">Administración</a></li>
+            </ng-container>
+          </ng-container>
+
+          <!-- Common options -->
           <li><a routerLink="/facturas" routerLinkActive="active">Facturación</a></li>
           <li><a (click)="logout()" class="logout-link">Cerrar Sesión</a></li>
         </ul>
@@ -85,6 +90,29 @@ interface CarritoItem {
       background: #4CAF50;
       color: white;
     }
+    
+    .user-info {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    .user-name {
+      margin: 0;
+      font-weight: 500;
+      color: #333;
+    }
+    .user-role {
+      font-size: 0.875rem;
+      color: #666;
+    }
+    .logout-link {
+      color: #dc3545 !important;
+      cursor: pointer;
+    }
+    .logout-link:hover {
+      background: #dc3545 !important;
+      color: white !important;
+    }
   `],
   standalone: true,
   imports: [CommonModule, RouterModule, FormsModule]
@@ -110,10 +138,26 @@ export class AppComponent implements OnInit {
   };
   selectedMascotaId: number | null = null;
 
-  constructor(private paseosService: PaseosService, public authService: AuthService, private router: Router) {}
+  constructor(
+    public authService: AuthService,
+    private router: Router,
+    private paseosService: PaseosService
+  ) {
+    // Check auth state on init
+    this.authService.user$.subscribe(user => {
+      if (!user && !this.router.url.includes('/auth')) {
+        this.router.navigate(['/auth']);
+      }
+    });
+  }
 
   ngOnInit() {
-    this.loadData();
+    // Only load data if user is authenticated
+    this.authService.user$.subscribe(user => {
+      if (user) {
+        this.loadData();
+      }
+    });
   }
 
   loadData() {
@@ -301,7 +345,25 @@ export class AppComponent implements OnInit {
   }
 
   logout() {
-    this.authService.logout();
-    this.router.navigate(['/auth']);
+    if (confirm('¿Está seguro que desea cerrar sesión?')) {
+      // Clear all local data
+      this.mascotas = [];
+      this.servicios = [];
+      this.carrito = [];
+      this.error = '';
+      
+      // Logout and redirect
+      this.authService.logout();
+    }
+  }
+
+  // Add these helper methods
+  getUserName(user: any): string {
+    const userTyped = user as Usuario;
+    return `${userTyped.nombre} ${userTyped.apellido}`;
+  }
+
+  getUserRole(user: any): string {
+    return (user as Usuario).rol;
   }
 }
