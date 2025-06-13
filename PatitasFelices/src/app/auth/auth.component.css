@@ -1,20 +1,23 @@
 .auth-container {
-  max-width: 400px;
+  max-width: 550px; /* Increased from 400px */
   margin: 2rem auto;
-  padding: 2rem;
+  padding: 2.5rem; /* Increased padding */
   background: var(--background-color);
   border-radius: var(--border-radius);
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Enhanced shadow */
+  transition: all 0.3s ease;
 }
 
 /* Center container for login and recovery */
 .auth-container.login-mode,
 .auth-container.recovery-mode {
   position: fixed;
-  width: 400px;
-  top: 25%;  /* Changed from 40% to move it higher */
-  left: calc(50% - 200px);  /* half of the width */
+  width: 500px; /* Increased from 400px */
+  top: 25%;
+  left: calc(50% - 250px);  /* half of the width */
   margin: 0;
+  background: linear-gradient(to bottom, #ffffff, #f8f9fa); /* Subtle gradient background */
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Make register form container wider for paseador fields */
@@ -24,13 +27,22 @@
 
 .form-group {
   margin-bottom: 1.5rem;
+  position: relative; /* For potential label animations */
 }
 
 input, select {
   width: 100%;
-  padding: 0.8rem;
+  padding: 0.9rem; /* Slightly increased padding */
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px; /* Increased border radius */
+  transition: border-color 0.3s, box-shadow 0.3s;
+  font-size: 1rem;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
 }
 
 button {
@@ -39,35 +51,62 @@ button {
   background: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px; /* Increased border radius */
   cursor: pointer;
-  transition: opacity 0.3s;
+  transition: all 0.3s;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: 0.5px;
 }
 
-button:hover { opacity: 0.9; }
-button:disabled { background: var(--disabled-color); }
+button:hover { 
+  opacity: 0.9; 
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button:disabled { 
+  background: var(--disabled-color); 
+  transform: none;
+  box-shadow: none;
+}
 
 .toggle-form, .recovery-link {
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  font-size: 1rem;
 }
 
 a {
   color: var(--primary-color);
   cursor: pointer;
   text-decoration: underline;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: #218838;
 }
 
 .error-message {
   color: #dc3545;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   text-align: center;
+  padding: 0.75rem;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 4px;
+  font-weight: 500;
 }
 
 .form-error {
   color: #dc3545;
   font-size: 0.875rem;
   margin-top: 0.25rem;
+  margin-left: 0.25rem;
 }
 
 .auth-footer {
@@ -80,18 +119,22 @@ a {
   color: #666;
   background-color: var(--background-color); 
   padding: 1rem 0;    
-  z-index: 1000;      
+  z-index: 1000;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .auth-footer a {
   position: relative;
-  color: #28a745;  /* Changed from #007bff to green */
+  color: #28a745;
   text-decoration: none;
   margin: 0 8px;
+  font-weight: 500;
 }
+
 .auth-footer a:hover {
   text-decoration: underline;
 }
+
 .auth-footer span {
   color: #aaa;
 }
@@ -100,8 +143,8 @@ a {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;  
-  margin-top: 1rem;  
+  gap: 0.75rem;  
+  margin-top: 1.5rem;  
 }
 
 .auth-links a {
@@ -109,55 +152,86 @@ a {
   cursor: pointer;
   text-decoration: none;
   padding: 0.25rem;  
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
 
 .auth-links a:hover {
-  color: #218838;  /* Changed from #0056b3 to darker green */
+  color: #218838;
   text-decoration: underline;
 }
 
 /* New styles for paseador registration */
 .form-section {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
   background-color: #f8f9fa;
-  border-radius: 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s;
+}
+
+.form-section:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
 }
 
 .form-section h3 {
   margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
+  margin-bottom: 1.25rem;
+  font-size: 1.2rem;
   color: #28a745;
+  border-bottom: 2px solid rgba(40, 167, 69, 0.2);
+  padding-bottom: 0.5rem;
 }
 
 .form-help {
   font-size: 0.9rem;
   color: #6c757d;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.5;
+  font-style: italic;
 }
 
+/* Improved disponibilidad section */
 .disponibilidad-item {
   margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e2e2e2;
+  padding: 1rem;
+  border: 1px solid #e2e2e2;
+  border-radius: 6px;
+  background-color: white;
+  transition: all 0.3s;
+}
+
+.disponibilidad-item:hover {
+  background-color: #f0f7f2;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.1);
+  border-color: rgba(40, 167, 69, 0.2);
+}
+
+.disponibilidad-item:not(:last-child) {
+  margin-bottom: 1rem;
 }
 
 .disponibilidad-form {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 12px;
   align-items: center;
-  gap: 10px;
+}
+
+.disponibilidad-form .form-group {
+  margin-bottom: 0; /* Remove bottom margin within the form to fix spacing */
 }
 
 .time-input {
-  flex: 1;
   margin-bottom: 0;
+  min-width: 120px; /* Ensure minimum width for time inputs */
 }
 
 .btn-remove {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px; /* Prevent shrinking */
   border-radius: 50%;
   padding: 0;
   display: flex;
@@ -165,26 +239,76 @@ a {
   justify-content: center;
   background-color: #dc3545;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   cursor: pointer;
+  transition: all 0.3s;
+  margin-left: auto;
 }
 
+.btn-remove:hover {
+  background-color: #c82333;
+  transform: rotate(90deg);
+}
+
+/* Make sure "Add horario" button appears only once with proper styling */
 .btn-secondary {
   background-color: #6c757d;
   width: auto;
-  padding: 0.5rem 1rem;
-  margin-bottom: 1rem;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.25rem;
+  margin-top: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 4px;
+  transition: all 0.3s;
+  box-shadow: none; /* Prevent duplicate shadow effect */
 }
 
-.form-select {
-  appearance: revert;
-  background-color: white;
+.btn-secondary:hover {
+  background-color: #5a6268;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 600px) {
+.btn-secondary:before {
+  content: "+";
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Add animation for form transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-container > div {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Media query adjustments */
+@media (max-width: 767px) {
+  .auth-container,
+  .auth-container.login-mode,
+  .auth-container.recovery-mode {
+    width: 90%;
+    max-width: none;
+    position: relative;
+    top: 0;
+    left: 0;
+    transform: none;
+    margin: 2rem auto;
+  }
+  
   .disponibilidad-form {
-    flex-direction: column;
+    grid-template-columns: 1fr; /* Single column on mobile */
     gap: 10px;
+  }
+  
+  .disponibilidad-form .form-group {
+    margin-bottom: 0.75rem; /* Add some spacing between stacked items */
   }
   
   .time-input {
@@ -192,6 +316,30 @@ a {
   }
   
   .btn-remove {
-    align-self: flex-end;
+    grid-column: 1;
+    justify-self: flex-end;
+    margin-top: 0.5rem;
   }
+}
+
+/* Add a subtle highlight for labels */
+
+
+/* Add styles for headings */
+h2 {
+  text-align: center;
+  color: #28a745;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  position: relative;
+}
+
+h2:after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 3px;
+  background-color: #28a745;
+  margin: 0.5rem auto 0;
+  border-radius: 3px;
 }
