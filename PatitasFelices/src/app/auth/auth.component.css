@@ -17,11 +17,16 @@
   margin: 0;
 }
 
+/* Make register form container wider for paseador fields */
+.register-form-container {
+  max-width: 100%;
+}
+
 .form-group {
   margin-bottom: 1.5rem;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 0.8rem;
   border: 1px solid var(--border-color);
@@ -110,4 +115,83 @@ a {
 .auth-links a:hover {
   color: #218838;  /* Changed from #0056b3 to darker green */
   text-decoration: underline;
+}
+
+/* New styles for paseador registration */
+.form-section {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.form-section h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  color: #28a745;
+}
+
+.form-help {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+}
+
+.disponibilidad-item {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e2e2;
+}
+
+.disponibilidad-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.time-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.btn-remove {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #dc3545;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  width: auto;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-select {
+  appearance: revert;
+  background-color: white;
+}
+
+@media (max-width: 600px) {
+  .disponibilidad-form {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .time-input {
+    width: 100%;
+  }
+  
+  .btn-remove {
+    align-self: flex-end;
+  }
 }

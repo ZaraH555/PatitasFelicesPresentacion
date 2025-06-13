@@ -815,7 +815,10 @@ app.post('/api/auth/login', authLimiter, async (req, res) => {
 
 app.post('/api/auth/registro', async (req, res) => {
   try {
-    const { nombre, apellido, correo, telefono, direccion, contrasena, rol } = req.body;
+    const { usuario, paseadorData, disponibilidad } = req.body;
+    
+    // Destructure usuario data
+    const { nombre, apellido, correo, telefono, direccion, contrasena, rol } = usuario;
 
     // Validate email
     if (!validator.isEmail(correo)) {
@@ -842,31 +845,73 @@ app.post('/api/auth/registro', async (req, res) => {
     // Hash password with SHA-512
     const hashedPassword = hashPassword(contrasena);
 
-    // Insert new user
-    const [result] = await connection.promise().query(
-      `INSERT INTO usuarios (nombre, apellido, correo, telefono, direccion, contraseña, rol) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, apellido, correo, telefono, direccion, hashedPassword, rol]
-    );
+    // Start transaction
+    await connection.promise().beginTransaction();
 
-    // Create paseador record if role is paseador
-    if (rol === 'paseador') {
-      await connection.promise().query(
-        'INSERT INTO paseadores (usuario_id, zona_servicio, tarifa) VALUES (?, ?, ?)',
-        [result.insertId, 'Zona 1', 100]
+    try {
+      // Insert new user
+      const [userResult] = await connection.promise().query(
+        `INSERT INTO usuarios (nombre, apellido, correo, telefono, direccion, contraseña, rol) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [nombre, apellido, correo, telefono, direccion, hashedPassword, rol]
       );
+
+      const userId = userResult.insertId;
+
+      // Create paseador record if role is paseador
+      if (rol === 'paseador' && paseadorData) {
+        const [paseadorResult] = await connection.promise().query(
+          'INSERT INTO paseadores (usuario_id, zona_servicio, tarifa) VALUES (?, ?, ?)',
+          [userId, paseadorData.zona_servicio, paseadorData.tarifa]
+        );
+
+        const paseadorId = paseadorResult.insertId;
+
+        // Add disponibilidad if provided
+        if (disponibilidad && disponibilidad.length > 0) {
+          for (const disp of disponibilidad) {
+            await connection.promise().query(
+              'INSERT INTO disponibilidad_paseadores (paseador_id, dia_semana, hora_inicio, hora_fin) VALUES (?, ?, ?, ?)',
+              [paseadorId, disp.dia_semana, disp.hora_inicio, disp.hora_fin]
+            );
+          }
+        }
+      }
+
+      // Commit transaction
+      await connection.promise().commit();
+
+      res.status(201).json({
+        id: userId,
+        nombre,
+        apellido,
+        correo,
+        rol
+      });
+    } catch (error) {
+      // Rollback transaction on error
+      await connection.promise().rollback();
+      throw error;
     }
-
-    res.status(201).json({
-      id: result.insertId,
-      nombre,
-      apellido,
-      correo,
-      rol
-    });
-
   } catch (error) {
     console.error('Registration error:', error);
+    res.status(500).json({ message: 'Error en el servidor' });
+  }
+});
+
+// Add endpoint to get paseador availability
+app.get('/api/paseadores/:id/disponibilidad', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const [disponibilidad] = await connection.promise().query(
+      `SELECT * FROM disponibilidad_paseadores WHERE paseador_id = ?`,
+      [id]
+    );
+    
+    res.json(disponibilidad);
+  } catch (error) {
+    console.error('Error fetching paseador disponibilidad:', error);
     res.status(500).json({ message: 'Error en el servidor' });
   }
 });

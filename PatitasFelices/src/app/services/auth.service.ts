@@ -6,10 +6,20 @@ import { Usuario } from '../models/usuario.model';
 import { environment } from '../../environments/environment';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
+import { Disponibilidad } from '../models/disponibilidad.model';
 
 interface AuthResponse {
   usuario: Usuario;
   token: string;
+}
+
+interface RegistroUsuarioData {
+  usuario: Partial<Usuario>;
+  paseadorData?: {
+    zona_servicio: string;
+    tarifa: number;
+  };
+  disponibilidad?: Disponibilidad[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -70,8 +80,20 @@ export class AuthService {
     return isPlatformBrowser(this.platformId) ? localStorage.getItem('token') : null;
   }
 
-  registrar(usuario: Partial<Usuario>): Observable<Usuario> {
-    return this.http.post<Usuario>(`${this.apiUrl}/registro`, usuario).pipe(
+  registrar(usuario: Partial<Usuario>, paseadorData?: any, disponibilidad?: Disponibilidad[]): Observable<Usuario> {
+    const registroData: RegistroUsuarioData = {
+      usuario
+    };
+
+    if (usuario.rol === 'paseador' && paseadorData) {
+      registroData.paseadorData = paseadorData;
+      
+      if (disponibilidad && disponibilidad.length > 0) {
+        registroData.disponibilidad = disponibilidad;
+      }
+    }
+
+    return this.http.post<Usuario>(`${this.apiUrl}/registro`, registroData).pipe(
       tap(user => {
         console.log('Usuario registrado:', user);
       }),

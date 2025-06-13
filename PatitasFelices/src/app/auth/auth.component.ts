@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormArray } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { DIAS_SEMANA, DiaSemana } from '../models/disponibilidad.model';
 
 @Component({
   selector: 'app-auth',
@@ -22,6 +23,8 @@ export class AuthComponent {
   registerForm!: FormGroup;
   recoveryForm!: FormGroup;
   error = '';
+  diasSemana = DIAS_SEMANA;
+  showPaseadorFields = false;
 
   private phonePattern = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
 
@@ -45,13 +48,52 @@ export class AuthComponent {
       correo: ['', [Validators.required, Validators.email]],
       telefono: ['', Validators.required],
       direccion: ['', Validators.required],
-      contrasena: ['', Validators.required],
-      rol: ['dueño']
+      contrasena: ['', [Validators.required, Validators.minLength(8)]],
+      rol: ['dueño'],
+      paseadorData: this.fb.group({
+        zona_servicio: [''],
+        tarifa: [0]
+      }),
+      disponibilidad: this.fb.array([])
     });
 
     this.recoveryForm = this.fb.group({
       correo: ['', [Validators.required, Validators.email]]
     });
+
+    // Subscribe to role changes to show/hide paseador fields
+    this.registerForm.get('rol')?.valueChanges.subscribe(rol => {
+      this.showPaseadorFields = rol === 'paseador';
+      
+      if (this.showPaseadorFields) {
+        this.registerForm.get('paseadorData.zona_servicio')?.setValidators(Validators.required);
+        this.registerForm.get('paseadorData.tarifa')?.setValidators([Validators.required, Validators.min(1)]);
+      } else {
+        this.registerForm.get('paseadorData.zona_servicio')?.clearValidators();
+        this.registerForm.get('paseadorData.tarifa')?.clearValidators();
+      }
+      
+      this.registerForm.get('paseadorData.zona_servicio')?.updateValueAndValidity();
+      this.registerForm.get('paseadorData.tarifa')?.updateValueAndValidity();
+    });
+  }
+
+  get disponibilidadArray() {
+    return this.registerForm.get('disponibilidad') as FormArray;
+  }
+
+  addDisponibilidad() {
+    const disponibilidadGroup = this.fb.group({
+      dia_semana: ['lunes', Validators.required],
+      hora_inicio: ['08:00', Validators.required],
+      hora_fin: ['18:00', Validators.required]
+    });
+    
+    this.disponibilidadArray.push(disponibilidadGroup);
+  }
+
+  removeDisponibilidad(index: number) {
+    this.disponibilidadArray.removeAt(index);
   }
 
   onLogin(): void {
@@ -72,7 +114,26 @@ export class AuthComponent {
 
   onRegister(): void {
     if (this.registerForm.valid) {
-      this.authService.registrar(this.registerForm.value).subscribe({
+      const formValue = this.registerForm.value;
+      const userData = {
+        nombre: formValue.nombre,
+        apellido: formValue.apellido,
+        correo: formValue.correo,
+        telefono: formValue.telefono,
+        direccion: formValue.direccion,
+        contrasena: formValue.contrasena,
+        rol: formValue.rol
+      };
+
+      let paseadorData = null;
+      let disponibilidad = null;
+
+      if (formValue.rol === 'paseador') {
+        paseadorData = formValue.paseadorData;
+        disponibilidad = formValue.disponibilidad;
+      }
+
+      this.authService.registrar(userData, paseadorData, disponibilidad).subscribe({
         next: (response) => {
           console.log('Registration successful:', response);
           this.currentForm = 'login';
@@ -86,7 +147,20 @@ export class AuthComponent {
           this.error = err.message || 'Error al registrarse';
         }
       });
+    } else {
+      // Mark all form controls as touched to display validation errors
+      this.markFormGroupTouched(this.registerForm);
     }
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup) {
+    Object.values(formGroup.controls).forEach(control => {
+      control.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
   }
 
   onRecovery(): void {
@@ -114,7 +188,14 @@ export class AuthComponent {
     if (form === 'login') {
       this.loginForm.reset();
     } else if (form === 'register') {
-      this.registerForm.reset();
+      this.registerForm.reset({
+        rol: 'dueño'
+      });
+      // Clear disponibilidad array
+      while (this.disponibilidadArray.length) {
+        this.disponibilidadArray.removeAt(0);
+      }
+      this.showPaseadorFields = false;
     } else if (form === 'recovery') {
       this.recoveryForm.reset();
     }

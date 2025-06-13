@@ -29,49 +29,114 @@
     </div>
   </div>
 
-  <div *ngIf="currentForm === 'register'">
+  <div *ngIf="currentForm === 'register'" class="register-form-container">
     <h2>Registro de Usuario</h2>
     <div *ngIf="error" class="error-message">{{error}}</div>
     <form (ngSubmit)="onFormSubmit('register')" [formGroup]="registerForm">
-      <div class="form-group">
-        <input type="text" formControlName="nombre" placeholder="Nombre"
-               [class.is-invalid]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched">
-      </div>
-      <div class="form-group">
-        <input type="text" formControlName="apellido" placeholder="Apellido"
-               [class.is-invalid]="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched">
-      </div>
-      <div class="form-group">
-        <input type="email" formControlName="correo" placeholder="Correo"
-               [class.is-invalid]="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
-        <div class="form-error" *ngIf="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
-          Ingrese un correo válido
+      <!-- Información básica de usuario -->
+      <div class="form-section">
+        <h3>Información Personal</h3>
+        <div class="form-group">
+          <input type="text" formControlName="nombre" placeholder="Nombre"
+                [class.is-invalid]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched">
+            El nombre es requerido
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="text" formControlName="apellido" placeholder="Apellido"
+                [class.is-invalid]="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('apellido')?.invalid && registerForm.get('apellido')?.touched">
+            El apellido es requerido
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="email" formControlName="correo" placeholder="Correo"
+                [class.is-invalid]="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('correo')?.invalid && registerForm.get('correo')?.touched">
+            Ingrese un correo válido
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="tel" formControlName="telefono" placeholder="Teléfono"
+                [class.is-invalid]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched">
+            Ingrese un número de teléfono válido
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="text" formControlName="direccion" placeholder="Dirección"
+                [class.is-invalid]="registerForm.get('direccion')?.invalid && registerForm.get('direccion')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('direccion')?.invalid && registerForm.get('direccion')?.touched">
+            La dirección es requerida
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="password" formControlName="contrasena" placeholder="Contraseña"
+                [class.is-invalid]="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched">
+            La contraseña debe tener al menos 8 caracteres
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tipo de usuario:</label>
+          <select formControlName="rol" class="form-select">
+            <option value="dueño">Dueño de Mascota</option>
+            <option value="paseador">Paseador</option>
+          </select>
         </div>
       </div>
-      <div class="form-group">
-        <input type="tel" formControlName="telefono" placeholder="Teléfono"
-               [class.is-invalid]="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched">
-        <div class="form-error" *ngIf="registerForm.get('telefono')?.invalid && registerForm.get('telefono')?.touched">
-          Ingrese un número de teléfono válido
+
+      <!-- Información específica de paseador -->
+      <div class="form-section" *ngIf="showPaseadorFields" formGroupName="paseadorData">
+        <h3>Información de Paseador</h3>
+        <div class="form-group">
+          <input type="text" formControlName="zona_servicio" placeholder="Zona de servicio (Ej: Zapopan Norte)"
+                [class.is-invalid]="registerForm.get('paseadorData.zona_servicio')?.invalid && registerForm.get('paseadorData.zona_servicio')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('paseadorData.zona_servicio')?.invalid && registerForm.get('paseadorData.zona_servicio')?.touched">
+            La zona de servicio es requerida
+          </div>
+        </div>
+        <div class="form-group">
+          <input type="number" formControlName="tarifa" placeholder="Tarifa por hora (MXN)"
+                [class.is-invalid]="registerForm.get('paseadorData.tarifa')?.invalid && registerForm.get('paseadorData.tarifa')?.touched">
+          <div class="form-error" *ngIf="registerForm.get('paseadorData.tarifa')?.invalid && registerForm.get('paseadorData.tarifa')?.touched">
+            La tarifa debe ser mayor a 0
+          </div>
         </div>
       </div>
-      <div class="form-group">
-        <input type="text" formControlName="direccion" placeholder="Dirección"
-               [class.is-invalid]="registerForm.get('direccion')?.invalid && registerForm.get('direccion')?.touched">
-      </div>
-      <div class="form-group">
-        <input type="password" formControlName="contrasena" placeholder="Contraseña"
-               [class.is-invalid]="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched">
-        <div class="form-error" *ngIf="registerForm.get('contrasena')?.invalid && registerForm.get('contrasena')?.touched">
-          La contraseña es requerida
+
+      <!-- Disponibilidad del paseador -->
+      <div class="form-section" *ngIf="showPaseadorFields">
+        <h3>Disponibilidad</h3>
+        <p class="form-help">Agrega los días y horarios en los que estás disponible para pasear mascotas.</p>
+        
+        <div formArrayName="disponibilidad">
+          <div *ngFor="let disponibilidadGroup of disponibilidadArray.controls; let i = index" class="disponibilidad-item" [formGroupName]="i">
+            <div class="disponibilidad-form">
+              <div class="form-group">
+                <select formControlName="dia_semana" class="form-select">
+                  <option *ngFor="let dia of diasSemana" [value]="dia">{{ dia | titlecase }}</option>
+                </select>
+              </div>
+              <div class="form-group time-input">
+                <input type="time" formControlName="hora_inicio">
+              </div>
+              <div class="form-group time-input">
+                <input type="time" formControlName="hora_fin">
+              </div>
+              <button type="button" class="btn-remove" (click)="removeDisponibilidad(i)">
+                <span>×</span>
+              </button>
+            </div>
+          </div>
         </div>
+        
+        <button type="button" class="btn-secondary" (click)="addDisponibilidad()">
+          Agregar horario
+        </button>
       </div>
-      <div class="form-group">
-        <select formControlName="rol">
-          <option value="dueño">Dueño de Mascota</option>
-          <option value="paseador">Paseador</option>
-        </select>
-      </div>
+
       <button type="submit" [disabled]="registerForm.invalid">Registrar</button>
     </form>
     <p class="toggle-form">
