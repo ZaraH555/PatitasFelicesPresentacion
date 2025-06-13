@@ -146,7 +146,7 @@ export class AppComponent implements OnInit {
     // Check auth state on init
     this.authService.user$.subscribe(user => {
       if (!user && !this.router.url.includes('/auth')) {
-        this.router.navigate(['/auth']);
+        // this.router.navigate(['/auth']);
       }
     });
   }

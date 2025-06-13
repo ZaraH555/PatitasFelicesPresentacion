@@ -925,9 +925,12 @@ app.post('/api/auth/restablecer', async (req, res) => {
       return res.status(400).json({ message: 'Token inválido o expirado' });
     }
 
+    // Hash the new password with SHA-512
+    const hashedPassword = hashPassword(nuevaContrasena);
+
     await connection.promise().query(
       'UPDATE usuarios SET contraseña = ?, token_recuperacion = NULL WHERE id = ?',
-      [nuevaContrasena, users[0].id]
+      [hashedPassword, users[0].id]
     );
 
     res.json({ message: 'Contraseña actualizada correctamente' });

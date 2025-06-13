@@ -9,7 +9,8 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendRecoveryEmail(to, token) {
-  const resetUrl = `http://localhost:4200/auth/restablecer/${token}`;
+  // This is the key change - matching the route structure in the Angular app
+  const resetUrl = `http://localhost:4200/restablecer/${token}`;
 
   const mailOptions = {
     from: process.env.EMAIL_USER,

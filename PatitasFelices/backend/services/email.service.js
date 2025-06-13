@@ -11,7 +11,7 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendRecoveryEmail(email, token) {
-  const resetUrl = `http://localhost:4200/auth/restablecer/${token}`;
+  const resetUrl = `http://localhost:4200/restablecer/${token}`;
   
   const mailOptions = {
     from: process.env.EMAIL_USER,
