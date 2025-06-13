@@ -70,6 +70,24 @@ export interface MascotaForm extends Omit<Mascota, 'id' | 'imagen' | 'imagen_url
           </div>
 
           <div class="form-group">
+            <label for="imagen">Imagen de la mascota</label>
+            <div class="image-upload-container">
+              <div class="image-preview" *ngIf="imagePreview">
+                <img [src]="imagePreview" alt="Vista previa">
+              </div>
+              <input type="file" 
+                     id="imagen" 
+                     name="imagen" 
+                     class="file-input" 
+                     accept="image/*"
+                     (change)="onFileSelected($event)">
+              <label for="imagen" class="file-label">
+                {{selectedFile ? selectedFile.name : 'Selecciona una imagen'}}
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
             <label for="notas">Notas (opcional)</label>
             <textarea id="notas" 
                       name="notas" 
@@ -175,6 +193,38 @@ export interface MascotaForm extends Omit<Mascota, 'id' | 'imagen' | 'imagen_url
       text-align: center;
       font-size: 1.5rem;
     }
+    .image-upload-container {
+      margin-top: 0.5rem;
+    }
+    .file-input {
+      display: none;
+    }
+    .file-label {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    .file-label:hover {
+      background-color: #e9e9e9;
+    }
+    .image-preview {
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 0.5rem;
+      text-align: center;
+    }
+    .image-preview img {
+      max-width: 100%;
+      max-height: 200px;
+    }
   `]
 })
 export class MascotaModalComponent implements OnChanges {
@@ -193,6 +243,7 @@ export class MascotaModalComponent implements OnChanges {
   };
 
   selectedFile?: File;
+  imagePreview: string | null = null;
 
   ngOnChanges() {
     if (this.mascota) {
@@ -204,6 +255,12 @@ export class MascotaModalComponent implements OnChanges {
         tipoEdad: this.mascota.tipoEdad || 'años',
         notas: this.mascota.notas || ''
       };
+      
+      // Set image preview if mascota has an image URL
+      this.imagePreview = this.mascota.imagen_url || null;
+      this.selectedFile = undefined;
+    } else {
+      this.resetForm();
     }
   }
 
@@ -211,6 +268,13 @@ export class MascotaModalComponent implements OnChanges {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
+      
+      // Create a preview of the selected image
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -231,6 +295,11 @@ export class MascotaModalComponent implements OnChanges {
   }
 
   cerrar() {
+    this.resetForm();
+    this.cerrarModal.emit();
+  }
+
+  resetForm() {
     this.mascotaData = {
       nombre: '',
       raza: '',
@@ -240,7 +309,7 @@ export class MascotaModalComponent implements OnChanges {
       notas: ''
     };
     this.selectedFile = undefined;
-    this.cerrarModal.emit();
+    this.imagePreview = null;
   }
 
   onEdadChange(event: any) {
